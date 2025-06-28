@@ -27,18 +27,18 @@ const questions = [
             return 'Please enter a name for your app.';
         }
     },
-    {
-        type: 'confirm',
-        name: 'isAdminPortal',
-        message: 'Is it an admin portal?',
-        default: false
-    },
-    {
-        type: 'confirm',
-        name: 'includeAwsSso',
-        message: 'Include AWS SSO?',
-        default: false
-    }
+    // {
+    //     type: 'confirm',
+    //     name: 'isAdminPortal',
+    //     message: 'Is it an admin portal?',
+    //     default: false
+    // },
+    // {
+    //     type: 'confirm',
+    //     name: 'includeAwsSso',
+    //     message: 'Include AWS SSO?',
+    //     default: false
+    // }
 ];
 
 inquirer.prompt(questions).then(async (answers) => {
@@ -56,6 +56,52 @@ inquirer.prompt(questions).then(async (answers) => {
         await execa('npm', ['install'], { cwd: appName });
 
         spinner.text = 'Customizing your app...';
+
+        // Update package.json
+        const pkgJsonPath = path.join(appName, 'package.json');
+        try {
+            if (await fs.pathExists(pkgJsonPath)) {
+                const pkgJson = await fs.readJson(pkgJsonPath);
+                pkgJson.name = appName;
+                await fs.writeJson(pkgJsonPath, pkgJson, { spaces: 2 });
+            }
+        } catch (error) {
+            spinner.warn(chalk.yellow('Could not update package.json.'));
+        }
+
+        // Update Layout.tsx
+        const layoutPaths = [
+            path.join(appName, 'app', 'layout.tsx'),
+            path.join(appName, 'src', 'app', 'layout.tsx')
+        ];
+
+        let layoutPathFound = false;
+        for (const layoutPath of layoutPaths) {
+            try {
+                if (await fs.pathExists(layoutPath)) {
+                    let layoutContent = await fs.readFile(layoutPath, 'utf-8');
+                    layoutContent = layoutContent.replace(
+                        /(title:\s*)['"][^'"]*['"]/,
+                        `$1'${appName}'`
+                    );
+                    layoutContent = layoutContent.replace(
+                        /(description:\s*)['"][^'"]*['"]/,
+                        `$1'${appName} description'`
+                    );
+                    await fs.writeFile(layoutPath, layoutContent);
+                    layoutPathFound = true;
+                    break; // Stop after finding and updating the first one
+                }
+            } catch (error) {
+                spinner.warn(chalk.yellow('Could not update Layout.tsx.'));
+                break;
+            }
+        }
+        
+        if (!layoutPathFound) {
+            spinner.warn(chalk.yellow('Layout.tsx not found. Skipping metadata update.'));
+        }
+
         if (isAdminPortal) {
             await fs.writeFile(path.join(appName, 'admin.config.js'), '// Admin portal configuration');
         }
