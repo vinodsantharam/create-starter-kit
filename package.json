@@ -1,0 +1,31 @@
+{
+  "name": "create-2c2p-starter-kit",
+  "version": "1.0.0",
+  "description": "Create a new 2c2p starter kit project",
+  "main": "index.js",
+  "type": "module",
+  "bin": {
+    "create-starter-kit": "./index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vinodsantharam/create-starter-kit.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vinodsantharam/create-starter-kit/issues"
+  },
+  "homepage": "https://github.com/vinodsantharam/create-starter-kit#readme",
+  "dependencies": {
+    "chalk": "^5.4.1",
+    "execa": "^9.6.0",
+    "fs-extra": "^11.3.0",
+    "inquirer": "^12.6.3",
+    "ora": "^8.2.0"
+  }
+}
